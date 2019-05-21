@@ -13,7 +13,7 @@ class hcc_list extends WP_Widget {
 			array( 'description' => __( 'A events list widget for multisite.', 'text_domain' ), ) // Args
 		);
 	}
-	
+
 
 	function clean_xhtml($string)
 	{
@@ -26,10 +26,10 @@ class hcc_list extends WP_Widget {
 
 	public function widget( $args, $instance ) {
 		// outputs the content of the widget
-		 
+
 	 	global $wpdb;
 		/* set up the args */
-		$title = $instance['title'];
+		$title = apply_filters( 'widget_title',$instance['title']);
 		$blogid = ($instance['blogid']>0?$instance['blogid']:12);
 		$limit_list = ($instance['number']>0?$instance['number']:1);
 		$category  = $instance['category'];
@@ -37,13 +37,19 @@ class hcc_list extends WP_Widget {
 		$tags =  $instance['tags'];
 
 		$calendar_blog_url = "";
-		$blog_details = get_blog_details($blogid);
-		if ($blog_details) {
-			$calendar_blog_url = $blog_details->siteurl;
-		} 
-		
-		$html = '<nav class="widget widget_hcclist" >';
- 		$html.= ($title!='')?'<h5 class="widget-title"><a href="'.$calendar_blog_url.'/events/">'.$title.'</a></h5>':'';
+		if (is_multisite()) {
+			$blog_details = get_blog_details($blogid);
+			if ($blog_details) {
+				$calendar_blog_url = $blog_details->siteurl;
+			}
+		}
+		$html = "";
+		//$html = '<nav class="widget widget_hcclist" >';
+		$html .=  $args['before_widget'];
+ 		//$html.= ($title!='')?'<h5 class="widget-title"><a href="'.$calendar_blog_url.'/events/">'.$title.'</a></h5>':'';
+		if ( ! empty( $title ) ) {
+				$html.= $args['before_title'] . $title . $args['after_title'];
+			}
 
  		/* $html .= '<p> blogid:'.$blogid.'</p>';
  		$html .= '<p> category:'.$category.'</p>';
@@ -51,7 +57,7 @@ class hcc_list extends WP_Widget {
  		$html .= '<p> number:'.$limit_list.'</p>'; */
 
 
-		$hcc_events = hcc_get_lastest($blogid, $limit_list, $category, $towns);
+		$hcc_events = hcc_get_lastest($blogid, $limit_list, $category, $towns, $tags);
 		if ($hcc_events) {
 			$html .= '<ul class="hcc_event_list">';
 			foreach ($hcc_events as $evt) {
@@ -72,12 +78,14 @@ class hcc_list extends WP_Widget {
 			$html .= '</ul>';
 		}
 		$html.= '<a class="hcc_link" href="'.$calendar_blog_url.'/events/">Visit Calendar</a>';
-		$html .= '</nav>';
+		//$html .= '</nav>';
+		$html .= $args['after_widget'];
+
 		echo $html;
-		
+
 
 	}
-	
+
 
 	private function string_limit_words($string, $word_limit)
 	{
@@ -85,7 +93,7 @@ class hcc_list extends WP_Widget {
 	  if(count($words) > $word_limit)
 	  array_pop($words);
 	  return implode(' ', $words);
-	} 
+	}
 
  	public function form( $instance ) {
 		// outputs the options form on admin
@@ -96,38 +104,38 @@ class hcc_list extends WP_Widget {
 		$towns = isset($instance['towns']) ? esc_attr( $instance['towns'] ) : '';
 		$tags = isset($instance['tags']) ? esc_attr( $instance['tags'] ) : '';
 
-		
-		?> 
+
+		?>
 		<p>
-			<label for="<?php echo $this->get_field_id( 'title' ); ?>"><?php _e( 'Title (optional):' ); ?></label> 
+			<label for="<?php echo $this->get_field_id( 'title' ); ?>"><?php _e( 'Title (optional):' ); ?></label>
 			<input class="widefat" id="<?php echo $this->get_field_id( 'title' ); ?>" name="<?php echo $this->get_field_name( 'title' ); ?>" type="text" value="<?php echo esc_attr( $title ); ?>" />
 		</p>
-		<p> 
+		<p>
         	<label for="<?php echo $this->get_field_id( 'blogid' ); ?>"><?php _e( 'Blog ID' ); ?></label>
 			<input id="<?php echo $this->get_field_id( 'blogid' ); ?>" name="<?php echo $this->get_field_name( 'blogid' ); ?>" type="text" value="<?php echo $blogid; ?>" size="3" />
 		</p>
-		<p> 
+		<p>
         	<label for="<?php echo $this->get_field_id( 'number' ); ?>"><?php _e( 'Number of events to show:' ); ?></label>
 			<input id="<?php echo $this->get_field_id( 'number' ); ?>" name="<?php echo $this->get_field_name( 'number' ); ?>" type="text" value="<?php echo $number; ?>" size="3" />
 		</p>
-		<p>  
+		<p>
     		<label for="<?php echo $this->get_field_id( 'category' ); ?>"><?php _e('Enter Categories IDs - comma separated:'); ?></label>
 			<input class="widefat" id="<?php echo $this->get_field_id( 'category' ); ?>" name="<?php echo $this->get_field_name( 'category' ); ?>" type="text" value="<?php echo esc_attr( $category ); ?>" />
-		</p>   
-	    <p> 
+		</p>
+	    <p>
 	    	<label for="<?php echo $this->get_field_id( 'towns' ); ?>"><?php _e('Towns filter - comma separated:'); ?></label>
 			<input class="widefat" id="<?php echo $this->get_field_id( 'towns' ); ?>" name="<?php echo $this->get_field_name( 'towns' ); ?>" type="text" value="<?php echo esc_attr( $towns ); ?>" />
 		</p>
-		<p> 
+		<p>
 	    	<label for="<?php echo $this->get_field_id( 'tags' ); ?>"><?php _e('tags filter - comma separated slugs:'); ?></label>
 			<input class="widefat" id="<?php echo $this->get_field_id( 'tags' ); ?>" name="<?php echo $this->get_field_name( 'tags' ); ?>" type="text" value="<?php echo esc_attr( $tags ); ?>" />
 		</p>
-		<?php 
+		<?php
 	}
 
 	public function update( $new_instance, $old_instance ) {
 		// processes widget options to be saved
-		
+
 		$instance = array();
 		$instance['title'] = strip_tags($new_instance['title']);
 		$instance['blogid'] = strip_tags($new_instance['blogid']);
@@ -137,7 +145,7 @@ class hcc_list extends WP_Widget {
 		$instance['tags'] = strip_tags($new_instance['tags']);
 
 		return $instance;
-		
+
 	}
 } /* end class */
 

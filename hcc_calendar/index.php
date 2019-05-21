@@ -4,7 +4,7 @@ Plugin Name: Hancock County Calendar Plugin
 
 Description: A events list widget for multisite
 
-Version: 0.6
+Version: 0.8
 
 Author: zig
 Date: 28Aug2014

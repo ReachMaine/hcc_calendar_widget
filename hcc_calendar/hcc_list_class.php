@@ -35,14 +35,10 @@ class hcc_list extends WP_Widget {
 		$category  = $instance['category'];
 		$towns = $instance['towns'];
 		$tags =  $instance['tags'];
+		$linktarget = $instance['moretarget'];
+		$linkwords = $instance['moretitle'];
 
-		$calendar_blog_url = "";
-		if (is_multisite()) {
-			$blog_details = get_blog_details($blogid);
-			if ($blog_details) {
-				$calendar_blog_url = $blog_details->siteurl;
-			}
-		}
+
 		$html = "";
 		//$html = '<nav class="widget widget_hcclist" >';
 		$html .=  $args['before_widget'];
@@ -77,7 +73,10 @@ class hcc_list extends WP_Widget {
 			}
 			$html .= '</ul>';
 		}
-		$html.= '<a class="hcc_link" href="'.$calendar_blog_url.'/events/">Visit Calendar</a>';
+		if ($linkwords && $linktarget) {
+			$html.= '<a class="hcc_link" href="'.$linktarget.'">'.$linkwords.'</a>';
+		}
+
 		//$html .= '</nav>';
 		$html .= $args['after_widget'];
 
@@ -104,6 +103,8 @@ class hcc_list extends WP_Widget {
 		$towns = isset($instance['towns']) ? esc_attr( $instance['towns'] ) : '';
 		$tags = isset($instance['tags']) ? esc_attr( $instance['tags'] ) : '';
 
+		$linkwords = isset($instance['moretitle']) ? esc_attr( $instance['moretitle'] ) : '';
+		$linktarget = isset($instance['moretarget']) ? esc_attr( $instance['moretarget'] ) : '';
 
 		?>
 		<p>
@@ -130,6 +131,15 @@ class hcc_list extends WP_Widget {
 	    	<label for="<?php echo $this->get_field_id( 'tags' ); ?>"><?php _e('tags filter - comma separated slugs:'); ?></label>
 			<input class="widefat" id="<?php echo $this->get_field_id( 'tags' ); ?>" name="<?php echo $this->get_field_name( 'tags' ); ?>" type="text" value="<?php echo esc_attr( $tags ); ?>" />
 		</p>
+
+		<p>
+				<label for="<?php echo $this->get_field_id( 'moretitle' ); ?>"><?php _e('link title:'); ?></label>
+			<input class="widefat" id="<?php echo $this->get_field_id( 'moretitle' ); ?>" name="<?php echo $this->get_field_name( 'moretitle' ); ?>" type="text" value="<?php echo esc_attr( $linkwords ); ?>" />
+		</p>
+		<p>
+				<label for="<?php echo $this->get_field_id( 'moretarget' ); ?>"><?php _e('link target:'); ?></label>
+			<input class="widefat" id="<?php echo $this->get_field_id( 'moretarget' ); ?>" name="<?php echo $this->get_field_name( 'moretarget' ); ?>" type="text" value="<?php echo esc_attr( $linktarget ); ?>" />
+		</p>
 		<?php
 	}
 
@@ -143,7 +153,8 @@ class hcc_list extends WP_Widget {
 		$instance['category'] = strip_tags($new_instance['category']);
 		$instance['towns'] = strip_tags($new_instance['towns']);
 		$instance['tags'] = strip_tags($new_instance['tags']);
-
+		$instance['moretitle'] = strip_tags($new_instance['moretitle']);
+		$instance['moretarget'] = strip_tags($new_instance['moretarget']);
 		return $instance;
 
 	}

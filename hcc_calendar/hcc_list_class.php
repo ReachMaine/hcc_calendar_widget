@@ -45,8 +45,14 @@ class hcc_list extends WP_Widget {
  		//$html.= ($title!='')?'<h5 class="widget-title"><a href="'.$calendar_blog_url.'/events/">'.$title.'</a></h5>':'';
 		if ( ! empty( $title ) ) {
 				$html.= $args['before_title'] . $title . $args['after_title'];
-			}
-
+		}
+		
+		if ( is_multisite() ) {
+			$blog_details = get_blog_details($blogid);
+				if ($blog_details) {
+					$calendar_blog_url = $blog_details->siteurl;
+				}
+		}
  		/* $html .= '<p> blogid:'.$blogid.'</p>';
  		$html .= '<p> category:'.$category.'</p>';
  		$html .= '<p> towns:'.$towns.'</p>';
